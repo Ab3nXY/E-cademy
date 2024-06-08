@@ -42,6 +42,7 @@ JWT_ALGORITHM = 'HS256'
 INSTALLED_APPS = [
     'rest_framework',
     'courses',
+    'accounts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
