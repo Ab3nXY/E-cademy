@@ -1,7 +1,9 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
+    path('auth/', include('dj_rest_auth.urls')),
+    path('auth/registration/', include('dj_rest_auth.registration.urls')),
     path('courses/', views.CourseListCreate.as_view(), name='course-list-create'),
     path('courses/<int:pk>/', views.CourseDetail.as_view(), name='course-detail'),
     path('materials/', views.MaterialListCreate.as_view(), name='material-list-create'),

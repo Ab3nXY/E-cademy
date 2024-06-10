@@ -1,26 +1,64 @@
-import logo from './logo.svg';
-import './App.css';
-import './styles/tailwind.css';
+import React, { useState, useEffect } from 'react';
+import axios from './components/axiosSetup';
+import './styles/tailwind.css';  // Assuming Tailwind CSS for styling
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import Sidebar from './components/Sidebar';
+import MenuBar from './components/Menubar';
 
-function App() {
+const App = () => {
+  const [csrfToken, setCsrfToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await axios.get('get_csrf_token/', { withCredentials: true });
+        setCsrfToken(response.data.csrftoken);
+        document.cookie = `csrftoken=${response.data.csrftoken}; path=/; secure`; // Set CSRF token as a cookie
+      } catch (error) {
+        console.error('Error fetching CSRF token:', error);
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const response = await axios.get('status/', { withCredentials: true });
+        setIsLoggedIn(response.data.isAuthenticated);
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="flex h-screen">
+        <Sidebar csrfToken={csrfToken} isLoggedIn={isLoggedIn} />
+        <div className="flex-1 flex flex-col">
+          <MenuBar />
+          <main className="flex-1 overflow-auto">
+            <Routes>
+              <Route exact path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login csrfToken={csrfToken} setIsLoggedIn={setIsLoggedIn} />} />
+              <Route path="/register" element={<Register csrfToken={csrfToken} />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Add more routes as needed */}
+            </Routes>
+          </main>
+        </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;

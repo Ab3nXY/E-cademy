@@ -1,5 +1,5 @@
 # Ignore the virtual environment
-venv/
+e_cademy_venv/
 
 # Ignore database files
 db.sqlite3

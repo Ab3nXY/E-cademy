@@ -1,21 +1,20 @@
-from django.contrib.auth import authenticate
 from django.http import JsonResponse
-from e_cademy.utils.jwt_utils import create_jwt_token, decode_jwt_token
+from e_cademy.utils.jwt_utils import  decode_jwt_token
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from accounts.decorators import role_required
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
-def login(request):
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-
-    user = authenticate(username=username, password=password)
-
-    if user:
-        token = create_jwt_token(user.id)
-        return JsonResponse({'token': token.decode('utf-8')})
+@csrf_exempt
+def check_auth_status(request):
+    if request.user.is_authenticated:
+        return JsonResponse({'isAuthenticated': True})
     else:
-        return JsonResponse({'error': 'Invalid credentials'}, status=400)
+        return JsonResponse({'isAuthenticated': False})
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'csrftoken': request.COOKIES['csrftoken']})
 
 def authenticate_jwt(request):
     token = request.POST.get('token')
