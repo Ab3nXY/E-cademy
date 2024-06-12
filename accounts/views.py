@@ -4,6 +4,37 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from accounts.decorators import role_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from .models import Profile
+from .serializers import ProfileSerializer
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Profile.objects.filter(user=user)
+
+class CurrentUserProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        profile = user.profile  
+        serialized_data = ProfileSerializer(profile).data
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+        serialized_data.update(user_data)
+        return Response(serialized_data)
 
 @csrf_exempt
 def check_auth_status(request):

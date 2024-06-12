@@ -19,6 +19,7 @@ const Login = ({ csrfToken, setIsLoggedIn }) => {
       console.log('Login successful:', response.data);
       setIsLoggedIn(true);  // Update the isLoggedIn state
       navigate('/dashboard');  // Redirect to the dashboard
+      window.location.reload();
     } catch (error) {
       console.error('Login error:', error);
       setError('Login failed. Please try again.'); // Example error handling

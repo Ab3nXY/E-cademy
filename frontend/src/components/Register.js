@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import axios from './axiosSetup';
+import { useNavigate } from 'react-router-dom';
 
 const Register = ({ csrfToken }) => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password1, setPassword1] = useState('');
   const [password2, setPassword2] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -17,6 +20,7 @@ const Register = ({ csrfToken }) => {
     try {
       const response = await axios.post('rest-auth/registration/', {
         username,
+        email,
         password1,
         password2,
       }, {
@@ -24,10 +28,12 @@ const Register = ({ csrfToken }) => {
       });
       console.log('Registration successful:', response.data);
       setUsername('');
+      setEmail('');
       setPassword1('');
       setPassword2('');
       setError('');
       // Handle successful registration (e.g., redirect user)
+      navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
       setError('Registration failed. Please try again.'); // Example error handling
@@ -46,6 +52,17 @@ const Register = ({ csrfToken }) => {
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
+          <input
+            type="text"
+            id="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           />
