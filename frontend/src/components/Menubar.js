@@ -28,7 +28,9 @@ const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
 
   return (
     <div className="bg-black bg-opacity-50 text-white flex  justify-between px-4 py-2">
+      <Link to="/" className="rounded">
       <div className="text-2xl font-semibold">E-cademy</div>
+      </Link>
       <nav className="flex space-x-4 px-4">
         <Link to="/" className="hover:bg-gray-700 px-3 py-2 rounded">
           Home
@@ -43,7 +45,7 @@ const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
       <div>
         {isLoggedIn ? (
           <button onClick={handleLogout} className="px-3 py-2">
-          <FontAwesomeIcon icon={faSignOutAlt} className="text-red-600 hover:text-red-700" />
+          Logout <FontAwesomeIcon icon={faSignOutAlt} className="text-red-600 hover:text-red-700" /> 
         </button>
         ) : (
           <>

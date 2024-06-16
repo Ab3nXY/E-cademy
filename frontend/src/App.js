@@ -4,6 +4,7 @@ import './styles/tailwind.css'; // Assuming Tailwind CSS for styling
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUser } from './redux/userSlice';
+import { fetchProfile } from './redux/profileSlice';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -15,25 +16,11 @@ import ProfileUpdate from './components/profile';
 const App = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.data);
+  const profile = useSelector((state) => state.profile.data);
+
   const pk = user?.id;
   const [csrfToken, setCsrfToken] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const [profileData, setProfileData] = useState({
-    username: '',
-    email: '',
-    first_name: '',
-    last_name: '',
-    role: '',
-    bio: '',
-    profile_image: '',
-    date_of_birth: '',
-    location: '',
-    website: '',
-    social_media_linkedin: '',
-    social_media_twitter: '',
-    interests: '',
-  });
 
   useEffect(() => {
     const fetchCsrfToken = async () => {
@@ -65,18 +52,22 @@ const App = () => {
     checkLoginStatus();
   }, [dispatch]);
 
-  console.log('PK:', pk);
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchProfile({ pk, csrfToken }));
+    }
+  }, [dispatch, user, pk, csrfToken]);
 
   return (
     <Router>
-      <div className="flex h-screen">
-        {isLoggedIn && user && <Sidebar csrfToken={csrfToken} pk={pk} isLoggedIn={isLoggedIn} profileData={profileData} />}
+      <div className="flex h-screen" style={{ backgroundColor: 'transparent' }}>
+        {isLoggedIn && user && <Sidebar csrfToken={csrfToken} pk={user?.id} profile={profile} isLoggedIn={isLoggedIn} />}
         <div className="flex-1 flex flex-col">
           <MenuBar csrfToken={csrfToken} setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
           <main className="flex-1 overflow-auto">
             <Routes>
               <Route exact path="/" element={<LandingPage />} />
-              <Route path="/profile/:pk" element={<ProfileUpdate csrfToken={csrfToken} profileData={profileData} setProfileData={setProfileData}/>} />
+              <Route path="/profile/:pk" element={<ProfileUpdate csrfToken={csrfToken} pk={user?.id} profile={profile} />} />
               <Route path="/login" element={<Login csrfToken={csrfToken} setIsLoggedIn={setIsLoggedIn} />} />
               <Route path="/register" element={<Register csrfToken={csrfToken} />} />
               <Route path="/dashboard" element={<Dashboard />} />

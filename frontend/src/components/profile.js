@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from './axiosSetup';
-import { useParams } from 'react-router-dom';
+import { fetchProfile} from '../redux/profileSlice';
+import { useSelector, useDispatch } from 'react-redux';
 
-const ProfileUpdate = ({ csrfToken }) => {
-  const { pk } = useParams();
+const ProfileUpdate = ({ csrfToken, pk }) => {
+  const dispatch = useDispatch();
+  const profile = useSelector((state) => state.profile.data);
+
   const [profileData, setProfileData] = useState({
     username: '',
     email: '',
@@ -11,7 +14,7 @@ const ProfileUpdate = ({ csrfToken }) => {
     last_name: '',
     role: '',
     bio: '',
-    profile_image: '',
+    profile_image: null,
     date_of_birth: '',
     location: '',
     website: '',
@@ -19,42 +22,18 @@ const ProfileUpdate = ({ csrfToken }) => {
     social_media_twitter: '',
     interests: '',
   });
-  const [profile_image, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const response = await axios.get(`profile/${pk}/`, {
-          headers: { 'X-CSRFToken': csrfToken },
-        });
-        const profile = response.data;
-        setProfileData({
-          username: profile.user.username,
-          email: profile.user.email,
-          first_name: profile.user.first_name,
-          last_name: profile.user.last_name,
-          role: profile.role || '',
-          bio: profile.bio || '',
-          profile_image: profile.profile_image || 'default.jpg',
-          date_of_birth: profile.date_of_birth,
-          location: profile.location || '',
-          website: profile.website || '',
-          social_media_linkedin: profile.social_media_linkedin || '',
-          social_media_twitter: profile.social_media_twitter || '',
-          interests: profile.interests || '',
-        });
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      }
-    };
-
-    fetchProfileData();
-  }, [pk, csrfToken]);
+      dispatch(fetchProfile({ pk, csrfToken }));
+  }, [dispatch, pk, csrfToken]);
 
   const handleChange = (e) => {
+  
     const { name, value, files } = e.target;
-
+  
     if (name === 'profile_image' && files && files.length > 0) {
       const file = files[0];
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
@@ -71,22 +50,37 @@ const ProfileUpdate = ({ csrfToken }) => {
       }));
     }
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
       const formData = new FormData();
       for (const key in profileData) {
-        formData.append(key, profileData[key]);
+        if (key === 'profile_image' && profileData[key] instanceof File) {
+          formData.append(key, profileData[key]);
+        } else {
+          formData.append(key, profileData[key]);
+        }
       }
+  
+      formData.append('user.first_name', profileData.first_name);
+      formData.append('user.last_name', profileData.last_name);
+  
       await axios.patch(`profile/${pk}/`, formData, {
-        headers: { 'X-CSRFToken': csrfToken },
+        headers: { 
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'multipart/form-data'
+        },
       });
+  
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
     }
   };
+  
+  
 
   return (
 <form onSubmit={handleSubmit} className="max-w-xl mx-auto mt-8 p-4 border rounded-lg shadow-lg">
@@ -94,7 +88,7 @@ const ProfileUpdate = ({ csrfToken }) => {
   <div className="mb-4 mx-4 flex justify-center">
     <div className="w-20 h-20 overflow-hidden rounded-full relative">
       <img
-        src={profile_image || profileData.profile_image || 'default.jpg'}
+        src={previewImage || profile?.profile_image || '../images/default.jpg'}
         alt="Profile"
         className="object-cover w-full h-full"
       />
@@ -110,6 +104,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="file"
         id="profile_image"
         name="profile_image"
+        accept="image/*"
         onChange={handleChange}
         className="hidden"
       />
@@ -122,7 +117,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="text"
         id="username"
         name="username"
-        value={profileData.username || ''}
+        value={profile?.user.username || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         readOnly
@@ -134,7 +129,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="email"
         id="email"
         name="email"
-        value={profileData.email || ''}
+        value={profile?.user.email || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         readOnly
@@ -146,7 +141,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="text"
         id="first_name"
         name="first_name"
-        value={profileData.first_name || ''}
+        value={profile?.user.first_name || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -157,7 +152,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="text"
         id="last_name"
         name="last_name"
-        value={profileData.last_name || ''}
+        value={profile?.user.last_name || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -168,7 +163,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="text"
         id="role"
         name="role"
-        value={profileData.role || ''}
+        value={profile?.role || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -180,7 +175,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="date"
         id="date_of_birth"
         name="date_of_birth"
-        value={profileData.date_of_birth || ''}
+        value={profile?.date_of_birth || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -191,7 +186,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="text"
         id="location"
         name="location"
-        value={profileData.location || ''}
+        value={profile?.location || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -202,7 +197,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="url"
         id="website"
         name="website"
-        value={profileData.website || ''}
+        value={profile?.website || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -213,7 +208,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="url"
         id="social_media_linkedin"
         name="social_media_linkedin"
-        value={profileData.social_media_linkedin || ''}
+        value={profile?.social_media_linkedin || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -224,7 +219,7 @@ const ProfileUpdate = ({ csrfToken }) => {
         type="url"
         id="social_media_twitter"
         name="social_media_twitter"
-        value={profileData.social_media_twitter || ''}
+        value={profile?.social_media_twitter || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -234,7 +229,7 @@ const ProfileUpdate = ({ csrfToken }) => {
       <textarea
         id="bio"
         name="bio"
-        value={profileData.bio || ''}
+        value={profile?.bio || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
       />
@@ -244,7 +239,7 @@ const ProfileUpdate = ({ csrfToken }) => {
       <textarea
         id="interests"
         name="interests"
-        value={profileData.interests || ''}
+        value={profile?.interests || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
       />
