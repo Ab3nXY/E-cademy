@@ -14,8 +14,8 @@ const Sidebar = ({ csrfToken, isLoggedIn, pk }) => {
   }, [dispatch, pk, csrfToken]);
 
   return (
-    <div className="h-screen bg-black bg-opacity-50 text-white w-48 flex flex-col">
-      <div className="flex items-center justify-center py-4 mt-5 border-gray-700">
+    <div className="bg-black bg-opacity-50 text-white flex justify-between w-48 flex-col mt-14">
+      <div className="flex items-center justify-center py-2 mt-5 border-gray-700">
         {profile && (
           <>
             <img

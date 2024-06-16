@@ -41,7 +41,7 @@ const Register = ({ csrfToken }) => {
   };
 
   return (
-    <div className="max-w-xs mx-auto mt-8 bg-white p-6 rounded shadow-lg">
+    <div className="max-w-xs mx-auto mt-14 bg-white p-6 rounded shadow-lg">
       <h2 className="text-2xl font-semibold mb-4">Register</h2>
       <form onSubmit={handleRegister}>
         {error && <p className="text-red-500 mb-4">{error}</p>}

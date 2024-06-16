@@ -13,6 +13,19 @@ export const fetchProfile = createAsyncThunk(
   }
 );
 
+export const updateProfile = createAsyncThunk(
+  'profile/updateProfile',
+  async ({ pk, formData, csrfToken }) => {
+    const response = await axios.patch(`/profile/${pk}/`, formData, {
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'multipart/form-data'
+      },
+    });
+    return response.data;
+  }
+);
+
 const profileSlice = createSlice({
   name: 'profile',
   initialState: {
@@ -32,6 +45,17 @@ const profileSlice = createSlice({
         state.data = action.payload;
       })
       .addCase(fetchProfile.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.data = action.payload;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
       });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from './axiosSetup';
-import { fetchProfile} from '../redux/profileSlice';
+import { fetchProfile, updateProfile} from '../redux/profileSlice';
 import { useSelector, useDispatch } from 'react-redux';
 
 const ProfileUpdate = ({ csrfToken, pk }) => {
@@ -26,6 +26,31 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
   useEffect(() => {
       dispatch(fetchProfile({ pk, csrfToken }));
   }, [dispatch, pk, csrfToken]);
+
+  useEffect(() => {
+    // Update local state with fetched profile data
+    if (profile) {
+      setProfileData({
+        username: profile.user.username || '',
+        email: profile.user.email || '',
+        first_name: profile.user.first_name || '',
+        last_name: profile.user.last_name || '',
+        role: profile.role || '',
+        bio: profile.bio || '',
+        profile_image: null, // Handle image separately if needed
+        date_of_birth: profile.date_of_birth || '',
+        location: profile.location || '',
+        website: profile.website || '',
+        social_media_linkedin: profile.social_media_linkedin || '',
+        social_media_twitter: profile.social_media_twitter || '',
+        interests: profile.interests || '',
+      });
+      // Set preview image if profile has profile_image
+      if (profile.profile_image) {
+        setPreviewImage(profile.profile_image);
+      }
+    }
+  }, [profile]);
 
   const handleChange = (e) => {
   
@@ -73,7 +98,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
           'Content-Type': 'multipart/form-data'
         },
       });
-  
+      dispatch(updateProfile({ pk, profileData }));
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -88,7 +113,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
   <div className="mb-4 mx-4 flex justify-center">
     <div className="w-20 h-20 overflow-hidden rounded-full relative">
       <img
-        src={previewImage || profile?.profile_image || '../images/default.jpg'}
+        src={previewImage || profileData.profile_image || '../images/default.jpg'}
         alt="Profile"
         className="object-cover w-full h-full"
       />
@@ -117,7 +142,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="text"
         id="username"
         name="username"
-        value={profile?.user.username || ''}
+        value={profileData.username || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         readOnly
@@ -129,7 +154,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="email"
         id="email"
         name="email"
-        value={profile?.user.email || ''}
+        value={profileData.email || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         readOnly
@@ -141,7 +166,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="text"
         id="first_name"
         name="first_name"
-        value={profile?.user.first_name || ''}
+        value={profileData.first_name || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -152,7 +177,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="text"
         id="last_name"
         name="last_name"
-        value={profile?.user.last_name || ''}
+        value={profileData.last_name || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -163,9 +188,10 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="text"
         id="role"
         name="role"
-        value={profile?.role || ''}
+        value={profileData.role || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
+        readOnly
         />
     </div>
 
@@ -175,7 +201,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="date"
         id="date_of_birth"
         name="date_of_birth"
-        value={profile?.date_of_birth || ''}
+        value={profileData.date_of_birth || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -186,7 +212,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="text"
         id="location"
         name="location"
-        value={profile?.location || ''}
+        value={profileData.location || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -197,7 +223,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="url"
         id="website"
         name="website"
-        value={profile?.website || ''}
+        value={profileData.website || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -208,7 +234,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="url"
         id="social_media_linkedin"
         name="social_media_linkedin"
-        value={profile?.social_media_linkedin || ''}
+        value={profileData.social_media_linkedin || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -219,7 +245,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
         type="url"
         id="social_media_twitter"
         name="social_media_twitter"
-        value={profile?.social_media_twitter || ''}
+        value={profileData.social_media_twitter || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
         />
@@ -229,7 +255,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
       <textarea
         id="bio"
         name="bio"
-        value={profile?.bio || ''}
+        value={profileData.bio || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
       />
@@ -239,7 +265,7 @@ const ProfileUpdate = ({ csrfToken, pk }) => {
       <textarea
         id="interests"
         name="interests"
-        value={profile?.interests || ''}
+        value={profileData.interests || ''}
         onChange={handleChange}
         className="w-full border rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-gray-600"
       />

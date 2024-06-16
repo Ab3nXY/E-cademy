@@ -61,10 +61,10 @@ const App = () => {
   return (
     <Router>
       <div className="flex h-screen" style={{ backgroundColor: 'transparent' }}>
-        {isLoggedIn && user && <Sidebar csrfToken={csrfToken} pk={user?.id} profile={profile} isLoggedIn={isLoggedIn} />}
-        <div className="flex-1 flex flex-col">
-          <MenuBar csrfToken={csrfToken} setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} />
-          <main className="flex-1 overflow-auto">
+          <MenuBar csrfToken={csrfToken} setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} /> 
+          {isLoggedIn && user && <Sidebar csrfToken={csrfToken} pk={user?.id} profile={profile} isLoggedIn={isLoggedIn} />}
+          
+          <main className="flex-1 overflow-auto ">
             <Routes>
               <Route exact path="/" element={<LandingPage />} />
               <Route path="/profile/:pk" element={<ProfileUpdate csrfToken={csrfToken} pk={user?.id} profile={profile} />} />
@@ -74,7 +74,6 @@ const App = () => {
               {/* Add more routes as needed */}
             </Routes>
           </main>
-        </div>
       </div>
     </Router>
   );
