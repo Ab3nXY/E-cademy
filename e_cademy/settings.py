@@ -33,9 +33,8 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000'
-]
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+
 
 # email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -48,7 +47,6 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
 # JWT settings
 JWT_SECRET_KEY = os.getenv('SECRET_KEY')
 JWT_ALGORITHM = 'HS256'
-
 
 INSTALLED_APPS = [
     'rest_framework',

@@ -13,8 +13,7 @@ urlpatterns = [
     path('authenticate-jwt/', views.authenticate_jwt, name='authenticate-jwt'),
     path('get_csrf_token/', views.get_csrf_token, name='get_csrf_token'),
     path('status/', views.check_auth_status, name='auth_status'),
-    path('profile/<int:pk>/', views.ProfileUpdateAPIView.as_view(), name='profile-update'),
-    path('profile/', views.CurrentUserProfileAPIView.as_view(), name='current-user-profile'),
+    path('profile/', views.CurrentUserProfileView.as_view(), name='current-user-profile'),
 ]
 
 if settings.DEBUG:

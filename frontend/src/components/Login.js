@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from './axiosSetup';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 
-const Login = ({ csrfToken, setIsLoggedIn }) => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { setIsLoggedIn, csrfToken } = useAuth(); // Use AuthContext to set login state
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -14,15 +16,14 @@ const Login = ({ csrfToken, setIsLoggedIn }) => {
       const response = await axios.post(
         'rest-auth/login/',
         { username, password },
-        { headers: { 'X-CSRFToken': csrfToken } }  // Include CSRF token in headers
+        { headers: { 'X-CSRFToken': csrfToken } }
       );
       console.log('Login successful:', response.data);
       setIsLoggedIn(true);  // Update the isLoggedIn state
       navigate('/dashboard');  // Redirect to the dashboard
-      window.location.reload();
     } catch (error) {
       console.error('Login error:', error);
-      setError('Login failed. Please try again.'); // Example error handling
+      setError('Login failed. Please try again.');
     }
   };
 

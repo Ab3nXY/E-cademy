@@ -16,17 +16,21 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
+        profile_image = validated_data.pop('profile_image', None)  # Handle profile image separately if needed
         user = instance.user
-
-        # Update the user fields if user data is provided
+        
+        if profile_image:
+            instance.profile_image = profile_image
+        
         if user_data:
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
+            user.first_name = user_data.get('first_name', user.first_name)
+            user.last_name = user_data.get('last_name', user.last_name)
             user.save()
 
-        # Update the profile fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
         instance.save()
+
 
         return instance

@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from './axiosSetup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../AuthContext'; // Adjust the path accordingly
 
-const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
+const MenuBar = ({ csrfToken }) => {
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
-  
 
   const handleLogout = async () => {
     try {
@@ -19,7 +20,6 @@ const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
       localStorage.removeItem('token');
       setIsLoggedIn(false);
       navigate('/');
-      window.location.reload(); 
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -28,7 +28,7 @@ const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
   return (
     <div className="bg-black bg-opacity-70 text-white flex justify-between items-center px-4 py-2 fixed w-full">
       <Link to="/" className="rounded">
-      <div className="text-2xl font-semibold px-10 transform hover:scale-105 transition duration-300 ease-in-out">E-cademy</div>
+        <div className="text-2xl font-semibold px-10 transform hover:scale-105 transition duration-300 ease-in-out">E-cademy</div>
       </Link>
       <nav className="flex space-x-4 px-4">
         <Link to="/" className="hover:bg-gray-700 px-3 py-2 rounded">
@@ -44,16 +44,16 @@ const MenuBar = ({ isLoggedIn, csrfToken, setIsLoggedIn }) => {
       <div>
         {isLoggedIn ? (
           <button onClick={handleLogout} className="px-3 py-2">
-          Logout <FontAwesomeIcon icon={faSignOutAlt} className="text-red-600 hover:text-red-700" /> 
-        </button>
+            Logout <FontAwesomeIcon icon={faSignOutAlt} className="text-red-600 hover:text-red-700" /> 
+          </button>
         ) : (
           <>
-        <Link to="/login" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
-          Login
-        </Link>
-        <Link to="/register" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg ml-2">
-          Register
-        </Link>
+            <Link to="/login" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+              Login
+            </Link>
+            <Link to="/register" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-4 py-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg ml-2">
+              Register
+            </Link>
           </>
         )}
       </div>

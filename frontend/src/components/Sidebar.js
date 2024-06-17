@@ -1,17 +1,23 @@
 import React, { useEffect } from 'react';
-import { Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { faUser, faBook, faCog, faChartLine, faChartBar, faTachometer } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchProfile} from '../redux/profileSlice'; // Import your fetchProfileData action
+import { fetchProfile } from '../redux/profileSlice';
+import { useAuth } from '../AuthContext'; // Import useAuth hook
 
-const Sidebar = ({ csrfToken, isLoggedIn, pk }) => {
+const Sidebar = () => {
+  const { isLoggedIn, csrfToken } = useAuth(); // Access isLoggedIn, pk, and csrfToken from AuthContext
+  
   const dispatch = useDispatch();
-  const profile = useSelector((state) => state.profile.data); // Access profile data from Redux state
+  const profile = useSelector((state) => state.profile.data);
 
   useEffect(() => {
-      dispatch(fetchProfile({ pk, csrfToken }));
-  }, [dispatch, pk, csrfToken]);
+    if (isLoggedIn) {
+      dispatch(fetchProfile({  csrfToken }));
+    }
+  }, [dispatch, isLoggedIn, csrfToken]);
+
 
   return (
     <div className="bg-black bg-opacity-50 text-white flex justify-between w-48 flex-col mt-14">
@@ -42,7 +48,7 @@ const Sidebar = ({ csrfToken, isLoggedIn, pk }) => {
             <FontAwesomeIcon icon={faChartLine} className='mr-2' />Quizzes
           </Link>
           {isLoggedIn && (
-            <Link to={`/profile/${pk}`} className="block px-4 py-2 rounded hover:bg-gray-700">
+            <Link to={`/profile/`} className="block px-4 py-2 rounded hover:bg-gray-700">
               <FontAwesomeIcon icon={faUser} className='mr-2' />Profile
             </Link>
           )}

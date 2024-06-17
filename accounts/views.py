@@ -4,37 +4,46 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from accounts.decorators import role_required
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from .models import Profile
-from .serializers import ProfileSerializer
-from rest_framework import generics
+from .serializers import ProfileSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateAPIView
 
-class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
+class CurrentUserProfileView(RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return Profile.objects.filter(user=user)
+    def get_object(self):
+        return self.request.user.profile
 
-class CurrentUserProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-    def get(self, request):
-        user = request.user
-        profile = user.profile  
-        serialized_data = ProfileSerializer(profile).data
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-        }
-        serialized_data.update(user_data)
-        return Response(serialized_data)
+    def update(self, request, *args, **kwargs):
+        mutable_data = request.data.copy()
+        user_data = mutable_data.pop('user', None)
+        profile_image = request.FILES.get('profile_image', None)
+        
+        instance = self.get_object()
+        partial = kwargs.pop('partial', False)
+        profile_serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
+        
+        profile_serializer.is_valid(raise_exception=True)
+        
+        if profile_image:
+            profile_serializer.validated_data['profile_image'] = profile_image
+        
+        profile_serializer.save()
+
+        if user_data:
+            user = instance.user
+            user_serializer = ProfileSerializer(user, data=user_data, partial=True)
+            user_serializer.is_valid(raise_exception=True)
+            user_serializer.save()
+
+        return Response(profile_serializer.data)
 
 @csrf_exempt
 def check_auth_status(request):

@@ -3,8 +3,8 @@ import axios from '../components/axiosSetup';
 
 export const fetchProfile = createAsyncThunk(
   'profile/fetchProfile',
-  async ({ pk, csrfToken }) => {
-    const response = await axios.get(`/profile/${pk}/`, {
+  async ({ csrfToken }) => {
+    const response = await axios.get(`/profile/`, {
       headers: {
         'X-CSRFToken': csrfToken
       }
@@ -15,14 +15,18 @@ export const fetchProfile = createAsyncThunk(
 
 export const updateProfile = createAsyncThunk(
   'profile/updateProfile',
-  async ({ pk, formData, csrfToken }) => {
-    const response = await axios.patch(`/profile/${pk}/`, formData, {
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'multipart/form-data'
-      },
-    });
-    return response.data;
+  async ({ formData, csrfToken }, thunkAPI) => {
+    try {
+      const response = await axios.patch(`/profile/`, formData, {
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'multipart/form-data'
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
   }
 );
 
