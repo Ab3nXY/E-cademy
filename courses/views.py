@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from .models import Course, Material, Assessment, Lesson, Enrollment, Progress
 from .serializers import (
     CourseSerializer, MaterialSerializer, AssessmentSerializer,
@@ -114,3 +114,24 @@ class CourseProgress(generics.RetrieveAPIView):
         course_data['progress'] = ProgressSerializer(progress).data
 
         return Response(course_data)
+
+class CourseEnrollmentList(generics.ListAPIView):
+    serializer_class = EnrollmentSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs['pk']
+        return Enrollment.objects.filter(course_id=course_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+class EnrolledCoursesList(generics.ListAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        enrolled_course_ids = Enrollment.objects.filter(user=user).values_list('course', flat=True)
+        return Course.objects.filter(id__in=enrolled_course_ids)

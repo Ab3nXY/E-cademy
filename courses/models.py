@@ -16,7 +16,7 @@ class Course(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
-    duration = models.PositiveIntegerField(help_text="Duration in minutes", default=0)
+    duration = models.PositiveIntegerField(help_text="Duration in hours", default=0)
     category = models.CharField(max_length=50, default='')
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='Beginner')
     thumbnail = models.ImageField(upload_to='course_thumbnails/', null=True, blank=True)

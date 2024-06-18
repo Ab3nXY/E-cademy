@@ -20,7 +20,7 @@ const Sidebar = () => {
 
 
   return (
-    <div className="bg-black bg-opacity-50 text-white flex justify-between w-48 flex-col mt-14">
+    <div className="bg-black bg-opacity-60 text-white flex justify-between w-48 flex-col mt-14">
       <div className="flex items-center justify-center py-2 mt-5 border-gray-700">
         {profile && (
           <>
