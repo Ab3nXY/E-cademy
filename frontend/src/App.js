@@ -30,7 +30,7 @@ const App = () => {
       <Router>
         <div className="flex h-screen z-1000" style={{ backgroundColor: 'transparent' }}>
           <MenuBar />
-          {isLoggedIn && user && <Sidebar profile={profile} />}
+          {isLoggedIn &&  <Sidebar profile={profile} />}
           
           <main className="flex-1 overflow-auto">
             <Routes>
@@ -38,7 +38,7 @@ const App = () => {
               <Route path="/profile/" element={<ProfileUpdate />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              {isLoggedIn && <Route path="/dashboard" element={<Dashboard />} />}
               <Route path="/courses" element={<Courses />} />
               {/* Add more routes as needed */}
             </Routes>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from './axiosSetup';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 
@@ -7,23 +6,19 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { setIsLoggedIn, csrfToken } = useAuth(); // Use AuthContext to set login state
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault();  // Prevent default form submission
+
     try {
-      const response = await axios.post(
-        'rest-auth/login/',
-        { username, password },
-        { headers: { 'X-CSRFToken': csrfToken } }
-      );
-      console.log('Login successful:', response.data);
-      setIsLoggedIn(true);  // Update the isLoggedIn state
-      navigate('/dashboard');  // Redirect to the dashboard
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Login failed. Please try again.');
+      const credentials = { username, password };
+      await login(credentials);  // Perform login
+      navigate('/dashboard');  // Navigate to the student dashboard
+    } catch (err) {
+      setError('Login failed: ' + err.message);
+      console.error('Login failed:', err);
     }
   };
 

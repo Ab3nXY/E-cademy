@@ -1,24 +1,16 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from './axiosSetup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../AuthContext'; // Adjust the path accordingly
+import { useAuth } from '../AuthContext'; 
 
-const MenuBar = ({ csrfToken }) => {
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+const MenuBar = () => {
+  const { isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await axios.post('/rest-auth/logout/', null, {
-        headers: {
-          'X-CSRFToken': csrfToken,
-        },
-      });
-
-      localStorage.removeItem('token');
-      setIsLoggedIn(false);
+      await logout();
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);

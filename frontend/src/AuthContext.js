@@ -40,8 +40,29 @@ export const AuthProvider = ({ children }) => {
     checkLoginStatus();
   }, [dispatch]);
 
+  const login = async (credentials) => {
+    try {
+      const response = await axios.post('rest-auth/login/', credentials, { withCredentials: true });
+      setIsLoggedIn(true);
+      dispatch(fetchUser()); // Fetch user data after login
+      console.log('Login successful', response.data)
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post('/rest-auth/logout/', {}, { withCredentials: true });
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, csrfToken }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, csrfToken }}>
       {children}
     </AuthContext.Provider>
   );
