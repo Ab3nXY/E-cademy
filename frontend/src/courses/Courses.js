@@ -1,21 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import axios from '../components/axiosSetup'; // Assuming you use axios for API calls
+import React from 'react';
+import axios from '../components/axiosSetup';
+import { useAuth } from '../AuthContext';
 import CourseCard from './CourseCard';
 
-const Course = ({ isInstructor }) => {
-  const [courses, setCourses] = useState([]);
+const Courses = ({ isInstructor, handleViewCourse }) => {
+  const { courses, enrollments, isLoggedIn, csrfToken, setIsEnrolled, user } = useAuth();
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get('api/courses/'); // Replace with your API endpoint
-        setCourses(response.data);
-      } catch (error) {
-        console.error('Error fetching courses:', error);
-      }
+  const enrollCourse = async (courseId) => {
+    if (!user) {
+      console.error('User is not defined');
+      return;
+    }
+
+    const payload = { 
+      course: courseId,
     };
-    fetchCourses();
-  }, []);
+
+    try {
+      await axios.post('/api/enrollments/', payload, {
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+      });
+
+      setIsEnrolled(courseId, true);
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      if (error.response && error.response.data) {
+        console.error('Error details:', error.response.data);
+      }
+    }
+  };
+
+  const unenrollCourse = async (courseId) => {
+    if (!user) {
+      console.error('User is not defined');
+      return;
+    }
+
+    const payload = { 
+      course: courseId,
+    };
+
+    try {
+      await axios.delete('/api/unenroll/', {
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+        data: payload,
+      });
+
+      setIsEnrolled(courseId, false);
+    } catch (error) {
+      console.error('Error unenrolling from course:', error);
+      if (error.response && error.response.data) {
+        console.error('Error details:', error.response.data);
+      }
+    }
+  };
+
+  const isEnrolled = (courseId) => {
+    return enrollments.some(enrollment => enrollment.course.id === courseId);
+  };
 
   return (
     <div className="flex flex-wrap mx-4 mt-16">
@@ -24,6 +70,11 @@ const Course = ({ isInstructor }) => {
           <CourseCard
             course={course}
             isInstructor={isInstructor}
+            enrollCourse={() => enrollCourse(course.id)}
+            unenrollCourse={() => unenrollCourse(course.id)}
+            isEnrolled={isEnrolled(course.id)}
+            showEnrollButton={isLoggedIn && !isEnrolled(course.id)}
+            showUnenrollButton={isLoggedIn && isEnrolled(course.id)}
           />
         </div>
       ))}
@@ -31,4 +82,4 @@ const Course = ({ isInstructor }) => {
   );
 };
 
-export default Course;
+export default Courses;

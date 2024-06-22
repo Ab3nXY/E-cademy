@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
   return (
-<div class="min-h-screen bg-gray-100 overflow-hidden ">  {/* Hero Section */}
+<div className="min-h-screen bg-gray-100 overflow-hidden ">  
   <section
-    class="flex flex-col  items-center justify-center h-screen text-white overflow-hidden"
+    className="flex flex-col  items-center justify-center h-screen text-white overflow-hidden"
     style={{ backgroundImage: 'url(images/bg.png)' , backgroundSize: 'cover', backgroundPosition: 'center' }}
   >
     <Link

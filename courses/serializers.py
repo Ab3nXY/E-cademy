@@ -19,7 +19,17 @@ class LessonSerializer(serializers.ModelSerializer):
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
-        fields = '__all__'
+        fields = ['id', 'course']  # Ensure user is not included here
+
+    def create(self, validated_data):
+        # Assign the user from the request
+        request = self.context.get('request')
+        user = request.user
+        course = validated_data.get('course')
+
+        # Create and return the new Enrollment instance
+        enrollment = Enrollment.objects.create(user=user, course=course)
+        return enrollment
 
 class CourseSerializer(serializers.ModelSerializer):
     materials = MaterialSerializer(many=True, read_only=True)

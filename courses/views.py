@@ -1,10 +1,11 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from .models import Course, Material, Assessment, Lesson, Enrollment, Progress
 from .serializers import (
     CourseSerializer, MaterialSerializer, AssessmentSerializer,
     LessonSerializer, EnrollmentSerializer, ProgressSerializer
 )
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 class CourseListCreate(generics.ListCreateAPIView):
     queryset = Course.objects.all()
@@ -41,6 +42,7 @@ class LessonDetail(generics.RetrieveUpdateDestroyAPIView):
 class EnrollmentListCreate(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
+    permission_classes = [IsAuthenticated]  # Ensure user is authenticated
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -51,11 +53,27 @@ class EnrollmentListCreate(generics.ListCreateAPIView):
         course_id = serializer.validated_data['course'].id
         if Enrollment.objects.filter(user=user, course_id=course_id).exists():
             return Response({"detail": "User is already enrolled in this course."}, status=status.HTTP_400_BAD_REQUEST)
-
+        print('course_id', course_id)
+        print('user', user)
         # Create the enrollment
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+class UnenrollAPIView(generics.DestroyAPIView):
+    queryset = Enrollment.objects.all()
+    serializer_class = EnrollmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course')
+        try:
+            enrollment = Enrollment.objects.get(user=user, course_id=course_id)
+            enrollment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Enrollment.DoesNotExist:
+            return Response({"detail": "Enrollment does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
 class EnrollmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Enrollment.objects.all()
@@ -74,7 +92,6 @@ class ProgressListCreate(generics.ListCreateAPIView):
         course_id = serializer.validated_data['course'].id
         if Progress.objects.filter(user=user, course_id=course_id).exists():
             return Response({"detail": "Progress entry already exists for this course."}, status=status.HTTP_400_BAD_REQUEST)
-
         # Create the progress entry
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
