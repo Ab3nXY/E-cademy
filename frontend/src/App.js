@@ -12,6 +12,7 @@ import { useAuth } from './AuthContext';
 import InstructorDashboard from './courses/InstructorDashboard';
 import StudentDashboard from './courses/StudentDashboard'; 
 import Courses from './courses/Courses';
+import CourseDetail from './courses/CourseDetail';
 
 
 const App = () => {
@@ -28,7 +29,7 @@ const App = () => {
   };
   return (
       <Router>
-        <div className="flex h-screen z-1000" style={{ backgroundColor: 'transparent' }}>
+        <div className="flex h-screen" style={{ backgroundColor: 'transparent' }}>
           <MenuBar />
           {isLoggedIn &&  <Sidebar profile={profile} />}
           
@@ -40,6 +41,7 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               {isLoggedIn && <Route path="/dashboard" element={<Dashboard />} />}
               <Route path="/courses" element={<Courses />} />
+              <Route exact path="/courses/:courseId" element={<CourseDetail />} />
               {/* Add more routes as needed */}
             </Routes>
           </main>

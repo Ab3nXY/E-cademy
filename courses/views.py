@@ -14,6 +14,7 @@ class CourseListCreate(generics.ListCreateAPIView):
 class CourseDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
 
 class MaterialListCreate(generics.ListCreateAPIView):
     queryset = Material.objects.all()
@@ -78,6 +79,7 @@ class UnenrollAPIView(generics.DestroyAPIView):
 class EnrollmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
+    permission_classes = [IsAuthenticated]
 
 class ProgressListCreate(generics.ListCreateAPIView):
     queryset = Progress.objects.all()

@@ -4,43 +4,76 @@ import CourseCard from './CourseCard';
 import { useAuth } from '../AuthContext';
 
 const CourseList = ({ isInstructor, handleViewCourse }) => {
+  const { isLoggedIn, csrfToken, setIsEnrolled, user } = useAuth();
   const [courses, setCourses] = useState([]);
-  const { enrollments, isLoggedIn, csrfToken, setIsEnrolled } = useAuth(); // Include setIsEnrolled from AuthContext
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      try {
+        const response = await axios.get('/api/enrolled-courses/');
+        setEnrolledCourses(response.data.map(course => course.id));
+      } catch (error) {
+        console.error('Error fetching enrolled courses:', error);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchEnrolledCourses();
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const response = isInstructor
-          ? await axios.get('api/courses/') // Replace with your API endpoint for all courses
-          : await axios.get('api/enrolled-courses/'); // Replace with your API endpoint for enrolled courses
+          ? await axios.get('api/courses/')
+          : await axios.get('api/enrolled-courses/');
 
-        setCourses(response.data);
+        // Filter courses to only include enrolled courses
+        const filteredCourses = response.data.filter(course =>
+          enrolledCourses.includes(course.id)
+        );
+        
+        setCourses(filteredCourses);
       } catch (error) {
         console.error('Error fetching courses:', error);
       }
     };
 
     fetchCourses();
-  }, [isInstructor]);
+  }, [isInstructor, enrolledCourses]);
 
-  const enrollCourse = async (courseId) => {
+  const unenrollCourse = async (courseId) => {
+    if (!user) {
+      console.error('User is not defined');
+      return;
+    }
+
+    const payload = { 
+      course: courseId,
+    };
+
     try {
-      await axios.post('/api/enrollments/', { course_id: courseId }, {
+      await axios.delete('/api/unenroll/', {
         headers: {
           'X-CSRFToken': csrfToken,
         },
+        data: payload,
       });
 
-      // Update enrollments in context
-      setIsEnrolled(courseId, true);
+      setIsEnrolled(courseId, false);
+      setEnrolledCourses(prevEnrolled => prevEnrolled.filter(id => id !== courseId));
     } catch (error) {
-      console.error('Error enrolling in course:', error);
+      console.error('Error unenrolling from course:', error);
+      if (error.response && error.response.data) {
+        console.error('Error details:', error.response.data);
+      }
     }
   };
 
-  // Function to check if a course is enrolled
   const isEnrolled = (courseId) => {
-    return enrollments.some(enrollment => enrollment.course.id === courseId);
+    return enrolledCourses.includes(courseId);
   };
 
   return (
@@ -50,8 +83,9 @@ const CourseList = ({ isInstructor, handleViewCourse }) => {
           <CourseCard
             course={course}
             isInstructor={isInstructor}
-            enrollCourse={() => enrollCourse(course.id)}
-            showEnrollButton={!isEnrolled(course.id) && isLoggedIn} // Show enroll button if not enrolled and user is logged in
+            isEnrolled={isEnrolled(course.id)}
+            unenrollCourse={() => unenrollCourse(course.id)}
+            showUnenrollButton={isEnrolled(course.id) && isLoggedIn}
           />
         </div>
       ))}

@@ -5,7 +5,7 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('courses');
 
   return (
-    <div className="instructor-dashboard mt-16 p-6 bg-gray-100 min-h-screen">
+    <div className="student-dashboard mt-16 p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Student Dashboard</h1>
       <nav className="mb-6">
         <button 
@@ -17,8 +17,8 @@ const StudentDashboard = () => {
         {/* Add buttons for other sections (materials, assessments, etc.) */}
       </nav>
       <div className="content">
-        {activeTab === 'courses' && <CourseList isInstructor={false} />}
-        {/* Conditionally render other components based on activeTab */}
+        {activeTab === 'courses' && <CourseList isInstructor={false}  />}
+        {/* Add conditional rendering for other tabs */}
       </div>
     </div>
   );

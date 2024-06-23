@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from '../components/axiosSetup';
-import { useAuth } from '../AuthContext';
 import CourseCard from './CourseCard';
+import { useAuth } from '../AuthContext';
 
 const Courses = ({ isInstructor, handleViewCourse }) => {
-  const { courses, enrollments, isLoggedIn, csrfToken, setIsEnrolled, user } = useAuth();
+  const { courses, isLoggedIn, csrfToken, setIsEnrolled, user } = useAuth();
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      try {
+        const response = await axios.get('/api/enrolled-courses/');
+        setEnrolledCourses(response.data.map(course => course.id));
+      } catch (error) {
+        console.error('Error fetching enrolled courses:', error);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchEnrolledCourses();
+    }
+  }, [isLoggedIn]);
 
   const enrollCourse = async (courseId) => {
     if (!user) {
@@ -24,6 +40,7 @@ const Courses = ({ isInstructor, handleViewCourse }) => {
       });
 
       setIsEnrolled(courseId, true);
+      setEnrolledCourses(prevEnrolled => [...prevEnrolled, courseId]);
     } catch (error) {
       console.error('Error enrolling in course:', error);
       if (error.response && error.response.data) {
@@ -51,6 +68,7 @@ const Courses = ({ isInstructor, handleViewCourse }) => {
       });
 
       setIsEnrolled(courseId, false);
+      setEnrolledCourses(prevEnrolled => prevEnrolled.filter(id => id !== courseId));
     } catch (error) {
       console.error('Error unenrolling from course:', error);
       if (error.response && error.response.data) {
@@ -60,7 +78,7 @@ const Courses = ({ isInstructor, handleViewCourse }) => {
   };
 
   const isEnrolled = (courseId) => {
-    return enrollments.some(enrollment => enrollment.course.id === courseId);
+    return enrolledCourses.includes(courseId);
   };
 
   return (
@@ -73,8 +91,8 @@ const Courses = ({ isInstructor, handleViewCourse }) => {
             enrollCourse={() => enrollCourse(course.id)}
             unenrollCourse={() => unenrollCourse(course.id)}
             isEnrolled={isEnrolled(course.id)}
-            showEnrollButton={isLoggedIn && !isEnrolled(course.id)}
-            showUnenrollButton={isLoggedIn && isEnrolled(course.id)}
+            showEnrollButton={!isEnrolled(course.id) && isLoggedIn}
+            showUnenrollButton={isEnrolled(course.id) && isLoggedIn}
           />
         </div>
       ))}

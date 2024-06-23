@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get('/api/enrollments', { withCredentials: true });
       setEnrollments(response.data);
-      console.log('Enrollments:', response.data);
     } catch (error) {
       console.error('Error fetching enrollments:', error);
     }
@@ -67,7 +66,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get('api/courses/');
       setCourses(response.data);
-      console.log('Courses:', response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
     }
