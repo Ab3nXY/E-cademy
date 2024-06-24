@@ -2,27 +2,33 @@ import React, { useState, useEffect } from 'react';
 import axios from '../components/axiosSetup';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import LessonList from './LessonList';
+import MaterialList from './MaterialList';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedIn, csrfToken, setIsEnrolled: setAuthIsEnrolled, user } = useAuth();
+  const { isLoggedIn, csrfToken, user } = useAuth();
   const [course, setCourse] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState(null);
-  const [isEnrolled, setLocalIsEnrolled] = useState(false);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
       try {
         const response = await axios.get(`/api/courses/${courseId}/`);
         setCourse(response.data);
-        if (isLoggedIn) {
-          const enrolledResponse = await axios.get(`/api/enrolled-courses/`);
-          const enrolledCourseIds = enrolledResponse.data.map(course => course.id);
-          setLocalIsEnrolled(enrolledCourseIds.includes(parseInt(courseId)));
-        }
       } catch (error) {
         console.error('Error fetching course detail:', error);
+      }
+    };
+
+    const fetchEnrolledCourses = async () => {
+      try {
+        const response = await axios.get('/api/enrolled-courses/');
+        setEnrolledCourses(response.data.map(course => course.id));
+      } catch (error) {
+        console.error('Error fetching enrolled courses:', error);
       }
     };
 
@@ -38,6 +44,9 @@ const CourseDetail = () => {
     if (courseId) {
       fetchCourseDetail();
       fetchEnrolledStudents();
+      if (isLoggedIn) {
+        fetchEnrolledCourses();
+      }
     }
   }, [courseId, isLoggedIn]);
 
@@ -48,7 +57,7 @@ const CourseDetail = () => {
       return;
     }
 
-    if (isEnrolled) {
+    if (isEnrolled(courseId)) {
       console.error('User is already enrolled in this course.');
       return;
     }
@@ -64,9 +73,8 @@ const CourseDetail = () => {
         },
       });
 
-      setAuthIsEnrolled(courseId, true);
-      setLocalIsEnrolled(true);
-      setEnrolledStudents((prevCount) => prevCount + 1);
+      setEnrolledCourses(prevEnrolled => [...prevEnrolled, courseId]);
+      setEnrolledStudents(prevCount => prevCount + 1);
     } catch (error) {
       console.error('Error enrolling in course:', error);
       if (error.response && error.response.data) {
@@ -88,15 +96,18 @@ const CourseDetail = () => {
         data: payload,
       });
 
-      setAuthIsEnrolled(courseId, false);
-      setLocalIsEnrolled(false);
-      setEnrolledStudents((prevCount) => prevCount - 1);
+      setEnrolledCourses(prevEnrolled => prevEnrolled.filter(id => id !== courseId));
+      setEnrolledStudents(prevCount => prevCount - 1);
     } catch (error) {
       console.error('Error unenrolling from course:', error);
       if (error.response && error.response.data) {
         console.error('Error details:', error.response.data);
       }
     }
+  };
+
+  const isEnrolled = (courseId) => {
+    return enrolledCourses.includes(courseId);
   };
 
   if (!course) {
@@ -110,12 +121,12 @@ const CourseDetail = () => {
         <img
           src={course.thumbnail ? course.thumbnail : '/default-thumbnail.png'}
           alt={course.title}
-          className="w-50% h-64 object-cover rounded-lg mb-4"
+          className="w-full h-full object-cover rounded-lg mb-4"
         />
         <p className="text-gray-600 mt-2 text-start">{course.description}</p>
       </div>
       <div className="w-full md:w-1/2 lg:w-1/3 p-10 flex flex-col justify-between">
-        <div className="bg-gray-50 shadow-inner rounded-lg p-5 space-y-2">
+        <div className="bg-gray-50 shadow-inner rounded-lg p-10 space-y-2">
           <div className="text-gray-600 text-md">
             <span className="font-bold">Level:</span> {course.level}
           </div>
@@ -134,7 +145,7 @@ const CourseDetail = () => {
         </div>
         <div className="flex justify-center mt-4">
           {isLoggedIn ? (
-            isEnrolled ? (
+            isEnrolled(courseId) ? (
               <button
                 onClick={unenrollCourse}
                 className="bg-transparent hover:bg-red-500 text-red-500 hover:text-white border border-red-500 hover:border-transparent py-1 px-2 rounded-full shadow-md transition duration-300 ease-in-out"
@@ -158,6 +169,10 @@ const CourseDetail = () => {
             </button>
           )}
         </div>
+      </div>
+      <div className="w-full mt-10">
+        <LessonList />
+        <MaterialList />
       </div>
     </div>
   );

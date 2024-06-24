@@ -6,6 +6,7 @@ from .serializers import (
 )
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
 class CourseListCreate(generics.ListCreateAPIView):
     queryset = Course.objects.all()
@@ -154,3 +155,30 @@ class EnrolledCoursesList(generics.ListAPIView):
         user = self.request.user
         enrolled_course_ids = Enrollment.objects.filter(user=user).values_list('course', flat=True)
         return Course.objects.filter(id__in=enrolled_course_ids)
+    
+class LessonListByCourse(generics.ListCreateAPIView):
+    serializer_class = LessonSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Lesson.objects.filter(course__id=course_id)
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs['course_id']
+        course = get_object_or_404(Course, id=course_id)
+        serializer.save(course=course)
+
+class MaterialListByCourse(generics.ListCreateAPIView):
+    serializer_class = MaterialSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Material.objects.filter(course__id=course_id)
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs['course_id']
+        course = get_object_or_404(Course, id=course_id)
+        serializer.save(course=course)
+    
