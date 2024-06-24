@@ -82,7 +82,7 @@ const Courses = ({ isInstructor, handleViewCourse }) => {
   };
 
   return (
-    <div className="flex flex-wrap mx-4 mt-16">
+    <div className="flex flex-wrap px-4 py-4 mx-4 mt-16">
       {courses.map((course) => (
         <div key={course.id} className="w-full sm:w-1/2 md:w-1/3 px-4 mb-8 flex">
           <CourseCard
