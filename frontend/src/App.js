@@ -35,6 +35,7 @@ const App = () => {
           
           <main className="flex-1 overflow-auto">
             <Routes>
+              {isLoggedIn && <Route path="/" element={<Dashboard />} />}
               <Route exact path="/" element={<LandingPage />} />
               <Route path="/profile/" element={<ProfileUpdate />} />
               <Route path="/login" element={<Login />} />
