@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions, status
-from .models import Course, Material, Assessment, Lesson, Enrollment, Progress
+from .models import Course, Material, Assessment, Lesson, Enrollment, Progress, SubLesson
 from .serializers import (
     CourseSerializer, MaterialSerializer, AssessmentSerializer,
-    LessonSerializer, EnrollmentSerializer, ProgressSerializer
+    LessonSerializer, EnrollmentSerializer, ProgressSerializer, SubLessonSerializer
 )
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -40,6 +40,13 @@ class LessonListCreate(generics.ListCreateAPIView):
 class LessonDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH', 'POST']:
+            return LessonSerializer  # Use LessonSerializer for updating or creating lesson
+        else:
+            return LessonSerializer  # Use LessonSerializer for retrieving lesson
+
 
 class EnrollmentListCreate(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
@@ -168,6 +175,21 @@ class LessonListByCourse(generics.ListCreateAPIView):
         course_id = self.kwargs['course_id']
         course = get_object_or_404(Course, id=course_id)
         serializer.save(course=course)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return LessonSerializer  # Use LessonSerializer for creating lessons
+        else:
+            return LessonSerializer  # Use LessonSerializer for listing lessons
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class LessonDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
 
 class MaterialListByCourse(generics.ListCreateAPIView):
     serializer_class = MaterialSerializer

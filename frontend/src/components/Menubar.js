@@ -19,11 +19,11 @@ const MenuBar = () => {
 
   return (
     <div className="bg-black bg-opacity-70 text-white flex justify-between items-center px-4 py-2 fixed w-full z-50">
-      <Link to="/dashboard" className="rounded">
+      <Link to="/" className="rounded">
         <div className="text-2xl font-semibold px-10 transform hover:scale-105 transition duration-300 ease-in-out">E-cademy</div>
       </Link>
       <nav className="flex space-x-4 px-4">
-        <Link to="/dashboard" className="hover:bg-gray-700 px-3 py-2 rounded">
+        <Link to="/" className="hover:bg-gray-700 px-3 py-2 rounded">
           Home
         </Link>
         <Link to="/about" className="hover:bg-gray-700 px-3 py-2 rounded">

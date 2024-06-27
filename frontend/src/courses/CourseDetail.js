@@ -4,15 +4,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import LessonList from './LessonList';
 import MaterialList from './MaterialList';
-import Tabs from './Tabs'; // Import the Tabs component
+import Tabs from './Tabs';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { isLoggedIn, csrfToken, setIsEnrolled: setAuthIsEnrolled, user } = useAuth();
   const [course, setCourse] = useState(null);
-  const [enrolledStudents, setEnrolledStudents] = useState(null);
   const [isEnrolled, setLocalIsEnrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState('Course Details');
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -29,25 +29,15 @@ const CourseDetail = () => {
       }
     };
 
-    const fetchEnrolledStudents = async () => {
-      try {
-        const response = await axios.get(`/api/courses/${courseId}/enrollments/`);
-        setEnrolledStudents(response.data.length);
-      } catch (error) {
-        console.error('Error fetching enrolled students:', error);
-      }
-    };
-
     if (courseId) {
       fetchCourseDetail();
-      fetchEnrolledStudents();
     }
   }, [courseId, isLoggedIn]);
 
   const enrollCourse = async () => {
     if (!user) {
       console.error('User is not defined');
-      navigate('/login'); 
+      navigate('/login');
       return;
     }
 
@@ -69,7 +59,6 @@ const CourseDetail = () => {
 
       setAuthIsEnrolled(courseId, true);
       setLocalIsEnrolled(true);
-      setEnrolledStudents((prevCount) => prevCount + 1);
     } catch (error) {
       console.error('Error enrolling in course:', error);
       if (error.response && error.response.data) {
@@ -93,7 +82,6 @@ const CourseDetail = () => {
 
       setAuthIsEnrolled(courseId, false);
       setLocalIsEnrolled(false);
-      setEnrolledStudents((prevCount) => prevCount - 1);
     } catch (error) {
       console.error('Error unenrolling from course:', error);
       if (error.response && error.response.data) {
@@ -105,7 +93,6 @@ const CourseDetail = () => {
   if (!course) {
     return <p>Loading...</p>; // Placeholder for loading state
   }
-
 
   const tabs = [
     {
@@ -120,8 +107,6 @@ const CourseDetail = () => {
           />
           <p className="text-gray-600 mt-2 text-start">{course.description}</p>
         </div>
-
-        
       ),
     },
     {
@@ -137,47 +122,49 @@ const CourseDetail = () => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden mt-16 px-5 py-5 flex flex-wrap">
       <div className="w-full md:w-1/2 lg:w-2/3">
-        <Tabs tabs={tabs} />
+        <Tabs tabs={tabs} onTabChange={(label) => setActiveTab(label)} />
       </div>
-      <div className="w-full md:w-1/2 lg:w-1/3 p-10 flex flex-col justify-between">
-        <div className="bg-gray-50 shadow-inner rounded-lg p-5 space-y-2">
-          <div className="text-gray-600 text-md">
-            <span className="font-bold">Level:</span> {course.level}
+      {activeTab === 'Course Details' && (
+        <div className="w-full md:w-1/2 lg:w-1/3 p-10 flex flex-col justify-between">
+          <div className="bg-gray-50 shadow-inner rounded-lg p-5 space-y-2">
+            <div className="text-gray-600 text-md">
+              <span className="font-bold">Level:</span> {course.level}
+            </div>
+            <div className="text-gray-600 text-md">
+              <span className="font-bold">Duration:</span> {course.duration} hours
+            </div>
+            <div className="text-gray-600 text-md">
+              <span className="font-bold">Instructor:</span> {course.instructor}
+            </div>
           </div>
-          <div className="text-gray-600 text-md">
-            <span className="font-bold">Duration:</span> {course.duration} hours
-          </div>
-          <div className="text-gray-600 text-md">
-            <span className="font-bold">Instructor:</span> {course.instructor}
-          </div>
-        </div>
-        <div className="flex justify-center mt-4">
-          {isLoggedIn ? (
-            isEnrolled ? (
-              <button
-                onClick={unenrollCourse}
-                className="bg-transparent hover:bg-red-500 text-red-500 hover:text-white border border-red-500 hover:border-transparent py-1 px-2 rounded-full shadow-md transition duration-300 ease-in-out"
-              >
-                Unenroll
-              </button>
+          <div className="flex justify-center mt-4">
+            {isLoggedIn ? (
+              isEnrolled ? (
+                <button
+                  onClick={unenrollCourse}
+                  className="bg-transparent hover:bg-red-500 text-red-500 hover:text-white border border-red-500 hover:border-transparent py-1 px-2 rounded-full shadow-md transition duration-300 ease-in-out"
+                >
+                  Unenroll
+                </button>
+              ) : (
+                <button
+                  onClick={enrollCourse}
+                  className="bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white border border-blue-500 hover:border-transparent py-1 px-2 rounded-full shadow-md transition duration-300 ease-in-out"
+                >
+                  Enroll
+                </button>
+              )
             ) : (
               <button
-                onClick={enrollCourse}
-                className="bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white border border-blue-500 hover:border-transparent py-1 px-2 rounded-full shadow-md transition duration-300 ease-in-out"
+                onClick={() => navigate('/login')}
+                className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition duration-300 ease-in-out"
               >
-                Enroll
+                Log in to Enroll
               </button>
-            )
-          ) : (
-            <button
-              onClick={() => navigate('/login')}
-              className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition duration-300 ease-in-out"
-            >
-              Log in to Enroll
-            </button>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

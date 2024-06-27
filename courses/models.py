@@ -51,6 +51,19 @@ class Lesson(models.Model):
     class Meta:
         ordering = ['order']
 
+class SubLesson(models.Model):
+    lesson = models.ForeignKey(Lesson, related_name='sublessons', on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    order = models.PositiveIntegerField(help_text="Order of the sub-lesson within the lesson")
+    parent_sublesson = models.ForeignKey('self', related_name='sublessons', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['order']
+
 class Assessment(models.Model):
     course = models.ForeignKey(Course, related_name='assessments', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course, Material, Assessment, Lesson, Enrollment, Progress
+from .models import Course, Material, Assessment, Lesson, Enrollment, Progress, SubLesson
 
 class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,7 +11,14 @@ class AssessmentSerializer(serializers.ModelSerializer):
         model = Assessment
         fields = '__all__'
 
+class SubLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubLesson
+        fields = '__all__'
+
 class LessonSerializer(serializers.ModelSerializer):
+    sublessons = SubLessonSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Lesson
         fields = '__all__'
