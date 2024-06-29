@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../components/axiosSetup';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronRight, faSave } from '@fortawesome/free-solid-svg-icons';
 import QuillEditor from './QuillEditor'; // Assuming QuillEditor component is implemented
@@ -162,6 +162,11 @@ const LessonList = () => {
                 )}
               </div>
             )}
+            <div className="mt-4">
+              <Link to={`/courses/${courseId}/lessons/${lesson.id}/quiz`} className="text-blue-600 hover:text-blue-800">
+                Take Quiz
+              </Link>
+            </div>
           </div>
         ))
       ) : (

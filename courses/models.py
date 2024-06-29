@@ -65,9 +65,16 @@ class SubLesson(models.Model):
         ordering = ['order']
 
 class Assessment(models.Model):
-    course = models.ForeignKey(Course, related_name='assessments', on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, related_name='assessments', on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, related_name='final_assessments', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=100)
-    question = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+class Question(models.Model):
+    assessment = models.ForeignKey(Assessment, related_name='questions', on_delete=models.CASCADE)
+    question_text = models.TextField()
     answer = models.CharField(max_length=100)
     option_1 = models.CharField(max_length=100, default='Default option 1')
     option_2 = models.CharField(max_length=100, default='Default option 2')
@@ -75,7 +82,7 @@ class Assessment(models.Model):
     option_4 = models.CharField(max_length=100, default='Default option 4')
 
     def __str__(self):
-        return self.title
+        return self.question_text
 
 class Enrollment(models.Model):
     user = models.ForeignKey(User, related_name='enrollments', on_delete=models.CASCADE)

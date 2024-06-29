@@ -13,6 +13,9 @@ import InstructorDashboard from './courses/InstructorDashboard';
 import StudentDashboard from './courses/StudentDashboard'; 
 import Courses from './courses/Courses';
 import CourseDetail from './courses/CourseDetail';
+import Quiz from './courses/Quiz';
+import FinalExam from './courses/FinalExam';
+import Result from './courses/Result';
 
 
 const App = () => {
@@ -43,7 +46,10 @@ const App = () => {
               {isLoggedIn && <Route path="/dashboard" element={<Dashboard />} />}
               <Route path="/courses" element={<Courses />} />
               <Route exact path="/courses/:courseId" element={<CourseDetail />} />
-              {/* Add more routes as needed */}
+              <Route path="/courses/:courseId/lessons/:lessonId/quiz" element={<Quiz />} />
+              <Route path="/courses/:courseId/lessons/:lessonId/result" element={<Result />} />
+              <Route path="/courses/:courseId/final-exam" element={<FinalExam />} />
+              <Route path="/courses/:courseId/final-exam/result" element={<Result />}/>
             </Routes>
           </main>
         </div>

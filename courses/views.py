@@ -26,12 +26,25 @@ class MaterialDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MaterialSerializer
 
 class AssessmentListCreate(generics.ListCreateAPIView):
-    queryset = Assessment.objects.all()
     serializer_class = AssessmentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.kwargs.get('course_id')
+        lesson_id = self.kwargs.get('lesson_id')
+        if lesson_id:
+            return Assessment.objects.filter(lesson_id=lesson_id)
+        return Assessment.objects.filter(course_id=course_id, lesson__isnull=True)
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs.get('course_id')
+        lesson_id = self.kwargs.get('lesson_id')
+        serializer.save(course_id=course_id, lesson_id=lesson_id)
 
 class AssessmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Assessment.objects.all()
     serializer_class = AssessmentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class LessonListCreate(generics.ListCreateAPIView):
     queryset = Lesson.objects.all()
