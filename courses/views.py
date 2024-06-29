@@ -15,8 +15,8 @@ class CourseListCreate(generics.ListCreateAPIView):
 class CourseDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated]
-
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
 class MaterialListCreate(generics.ListCreateAPIView):
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
@@ -43,10 +43,9 @@ class LessonDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH', 'POST']:
-            return LessonSerializer  # Use LessonSerializer for updating or creating lesson
+            return LessonSerializer  
         else:
-            return LessonSerializer  # Use LessonSerializer for retrieving lesson
-
+            return LessonSerializer  
 
 class EnrollmentListCreate(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
@@ -190,6 +189,7 @@ class LessonListByCourse(generics.ListCreateAPIView):
 class LessonDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class MaterialListByCourse(generics.ListCreateAPIView):
     serializer_class = MaterialSerializer

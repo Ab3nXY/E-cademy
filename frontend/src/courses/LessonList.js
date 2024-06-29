@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from '../components/axiosSetup';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronRight, faSave } from '@fortawesome/free-solid-svg-icons';
+import QuillEditor from './QuillEditor'; // Assuming QuillEditor component is implemented
+import { useAuth } from '../AuthContext'; // Correctly import useAuth
 
 const LessonList = () => {
   const { courseId } = useParams();
   const [lessons, setLessons] = useState([]);
   const [expandedLessonIds, setExpandedLessonIds] = useState([]);
   const [expandedSubLessonIds, setExpandedSubLessonIds] = useState({});
+  const { isAdmin } = useAuth(); // Use isAdmin from useAuth
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -42,12 +45,40 @@ const LessonList = () => {
     }));
   };
 
-  const renderContentWithHTML = (content) => {
-    // Replace newline characters with HTML line breaks
-    const formattedContent = content.replace(/\n/g, '<br>');
+  const handleLessonContentChange = (lessonId, content) => {
+    setLessons((prevLessons) =>
+      prevLessons.map((lesson) =>
+        lesson.id === lessonId ? { ...lesson, content } : lesson
+      )
+    );
+  };
 
-    // Render content with dangerouslySetInnerHTML to allow HTML
-    return <div dangerouslySetInnerHTML={{ __html: formattedContent }} />;
+  const handleSubLessonContentChange = (lessonId, subLessonId, content) => {
+    setLessons((prevLessons) =>
+      prevLessons.map((lesson) =>
+        lesson.id === lessonId
+          ? {
+              ...lesson,
+              sublessons: lesson.sublessons.map((sublesson) =>
+                sublesson.id === subLessonId ? { ...sublesson, content } : sublesson
+              )
+            }
+          : lesson
+      )
+    );
+  };
+
+  const saveLessonContent = async (lessonId, content) => {
+    try {
+      const lessonToUpdate = lessons.find((lesson) => lesson.id === lessonId);
+      const updatedLesson = { ...lessonToUpdate, content };
+      await axios.put(`/api/courses/${courseId}/lessons/${lessonId}/`, updatedLesson);
+      console.log(`Lesson ${lessonId} content saved.`);
+      // Handle success feedback if needed
+    } catch (error) {
+      console.error(`Error saving Lesson ${lessonId} content:`, error);
+      // Handle error feedback if needed
+    }
   };
 
   return (
@@ -65,26 +96,64 @@ const LessonList = () => {
                 </button>
                 <h3 className="text-xl font-semibold text-blue-800">{lesson.title}</h3>
               </div>
+              {isAdmin && (
+                <button
+                  onClick={() => saveLessonContent(lesson.id, lesson.content)}
+                  className="px-2 text-blue-600 hover:text-blue-800"
+                >
+                  <FontAwesomeIcon icon={faSave} size="2x" />
+                </button>
+              )}
             </div>
             {expandedLessonIds.includes(lesson.id) && (
               <div className="mt-4">
-                {renderContentWithHTML(lesson.content)}
+                {isAdmin ? (
+                  <QuillEditor
+                    value={lesson.content}
+                    onChange={(content) => handleLessonContentChange(lesson.id, content)}
+                  />
+                ) : (
+                  <div
+                    className="ql-editor"
+                    dangerouslySetInnerHTML={{ __html: lesson.content }}
+                  />
+                )}
                 {lesson.sublessons && lesson.sublessons.length > 0 && (
                   <div className="mt-4 ml-6">
                     {lesson.sublessons.map((sublesson) => (
-                      <div key={sublesson.id} className="bg-gray-100 p-4 mb-2 rounded-md shadow-sm">
-                        <div className="flex items-center">
-                          <button
-                            onClick={() => toggleSubLesson(lesson.id, sublesson.id)}
-                            className="text-blue-600 hover:text-blue-800 focus:outline-none mr-2"
-                          >
-                            <FontAwesomeIcon icon={expandedSubLessonIds[`lesson_${lesson.id}`]?.[sublesson.id] ? faChevronDown : faChevronRight} />
-                          </button>
-                          <h5 className="text-md font-semibold text-blue-700">{sublesson.title}</h5>
+                      <div key={sublesson.id} className="bg-gray-100 p-4 mb-2 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => toggleSubLesson(lesson.id, sublesson.id)}
+                              className="text-blue-600 hover:text-blue-800 focus:outline-none mr-2"
+                            >
+                              <FontAwesomeIcon
+                                icon={
+                                  expandedSubLessonIds[`lesson_${lesson.id}`]?.[sublesson.id]
+                                    ? faChevronDown
+                                    : faChevronRight
+                                }
+                              />
+                            </button>
+                            <h4 className="text-lg font-semibold text-blue-700">{sublesson.title}</h4>
+                          </div>
                         </div>
                         {expandedSubLessonIds[`lesson_${lesson.id}`]?.[sublesson.id] && (
                           <div className="mt-2">
-                            {renderContentWithHTML(sublesson.content)}
+                            {isAdmin ? (
+                              <QuillEditor
+                                value={sublesson.content}
+                                onChange={(content) =>
+                                  handleSubLessonContentChange(lesson.id, sublesson.id, content)
+                                }
+                              />
+                            ) : (
+                              <div
+                                className="ql-editor"
+                                dangerouslySetInnerHTML={{ __html: sublesson.content }}
+                              />
+                            )}
                           </div>
                         )}
                       </div>
@@ -96,7 +165,7 @@ const LessonList = () => {
           </div>
         ))
       ) : (
-        <p className="text-gray-500">No lessons available.</p>
+        <p>No lessons found.</p>
       )}
     </div>
   );

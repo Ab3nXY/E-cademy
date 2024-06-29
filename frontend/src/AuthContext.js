@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [csrfToken, setCsrfToken] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.data);
 
@@ -52,6 +53,12 @@ export const AuthProvider = ({ children }) => {
 
     checkLoginStatus();
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      setIsAdmin(user.role === 'admin');
+    }
+  }, [user]);
 
   const fetchEnrollments = async () => {
     try {
@@ -97,10 +104,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, setIsLoggedIn, csrfToken, enrollments, courses, setIsEnrolled, user }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, setIsLoggedIn, csrfToken, enrollments, courses, setIsEnrolled, user, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+export { AuthContext }; // Export AuthContext
