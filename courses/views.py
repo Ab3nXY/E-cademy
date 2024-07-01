@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions, status
-from .models import Course, Material, Assessment, Lesson, Enrollment, Progress, SubLesson
+from .models import Course, Material, Assessment, Lesson, Enrollment, Progress, SubLesson, Question
 from .serializers import (
     CourseSerializer, MaterialSerializer, AssessmentSerializer,
     LessonSerializer, EnrollmentSerializer, ProgressSerializer, SubLessonSerializer
@@ -45,6 +45,39 @@ class AssessmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Assessment.objects.all()
     serializer_class = AssessmentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class SubmitAssessmentView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AssessmentSerializer
+
+    def post(self, request, course_id, lesson_id):
+        answers = request.data.get('answers', [])
+        questions = Question.objects.filter(assessment__lesson_id=lesson_id)
+        
+        if not answers or len(answers) != questions.count():
+            return Response({'error': 'Incomplete answers'}, status=status.HTTP_400_BAD_REQUEST)
+
+        score = 0
+        correct_answers = []
+        for i, question in enumerate(questions):
+            correct = question.answer == answers[i]
+            if correct:
+                score += 1
+            correct_answers.append({
+                'question_text': question.question_text,
+                'correct_answer': question.answer,
+                'given_answer': answers[i],
+                'is_correct': correct
+            })
+
+        result = {
+            'total_questions': questions.count(),
+            'correct_answers_count': score,
+            'score': (score / questions.count()) * 100,
+            'correct_answers': correct_answers
+        }
+
+        return Response(result, status=status.HTTP_200_OK)
 
 class LessonListCreate(generics.ListCreateAPIView):
     queryset = Lesson.objects.all()
